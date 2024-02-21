@@ -1,0 +1,37 @@
+FROM nvcr.io/nvidia/cuda:12.3.1-base-ubuntu22.04
+LABEL display-name="nvitop Exporter"
+
+# Required for metrics
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,compat32
+# Disable all constraints on the configurations required by NVIDIA container toolkit
+ENV NVIDIA_DISABLE_REQUIRE=true
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NO_SETCAP=
+
+# Install Python 3
+RUN apt-get update && \
+  apt-get install --quiet --yes --no-install-recommends curl python3-dev python3-venv locales && \
+  rm -rf /var/lib/apt/lists/*
+
+# Install pip
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3 get-pip.py
+
+# Setup locale
+ENV LC_ALL=C.UTF-8
+RUN update-locale LC_ALL="C.UTF-8"
+
+# Install nvitop using pip
+RUN python3 -m pip install --upgrade pip setuptools
+RUN python3 -m pip install nvitop nvitop-exporter
+
+ENV NVITOP_EXPORTER_VERSION="$(nvitop-exporter --version)"
+
+LABEL nvitop-exporter.version=NVITOP_EXPORTER_VERSION
+
+COPY nvitop-exporter-entrypoint.sh /usr/local/bin/nvitop-exporter-entrypoint.sh
+RUN chmod +x /usr/local/bin/nvitop-exporter-entrypoint.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["/usr/local/bin/nvitop-exporter-entrypoint.sh"]

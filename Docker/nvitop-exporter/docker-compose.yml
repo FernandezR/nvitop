@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  nvitop_exporter:
+    image: fernandezr/nvitop-exporter:latest
+    container_name: nvitop_exporter
+    restart: always # unless-stopped
+    runtime: nvidia
+    ports:
+      - 8000:8000
+    command: --bind-address 0.0.0.0
+    labels:
+      # - "com.centurylinklabs.watchtower.monitor-only=true"
+      # - "com.centurylinklabs.watchtower.enable=false"
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "diun.enable=true"
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://localhost:3100/loki/api/v1/push"
+        max-size: "10m"
+        loki-retries: "3"
+        loki-max-backoff: "800ms"
+        loki-timeout: "3s"
+        keep-file: "true"
+ 
