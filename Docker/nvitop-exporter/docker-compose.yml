@@ -23,4 +23,3 @@ services:
         loki-max-backoff: "800ms"
         loki-timeout: "3s"
         keep-file: "true"
- 
