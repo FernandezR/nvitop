@@ -440,7 +440,11 @@ def test_video_Movie_on_demand_subtitles(movie, account):
     subtitle = subtitles[0]
 
     movie.downloadSubtitles(subtitle)
-    utils.wait_until(lambda: len(movie.reload().subtitleStreams()) > len(movie_subtitles))
+    utils.wait_until(
+        lambda: len(movie.reload().subtitleStreams()) > len(movie_subtitles),
+        delay=0.5,
+        timeout=5,
+    )
     subtitle_sourceKeys = {stream.sourceKey: stream for stream in movie.subtitleStreams()}
     assert subtitle.sourceKey in subtitle_sourceKeys
 
@@ -685,7 +689,9 @@ def test_video_Movie_mixins_rating(movie):
 
 def test_video_Movie_mixins_fields(movie):
     test_mixins.edit_added_at(movie)
+    test_mixins.edit_audience_rating(movie)
     test_mixins.edit_content_rating(movie)
+    test_mixins.edit_critic_rating(movie)
     test_mixins.edit_originally_available(movie)
     test_mixins.edit_original_title(movie)
     test_mixins.edit_sort_title(movie)
@@ -951,7 +957,9 @@ def test_video_Show_mixins_rating(show):
 
 def test_video_Show_mixins_fields(show):
     test_mixins.edit_added_at(show)
+    test_mixins.edit_audience_rating(show)
     test_mixins.edit_content_rating(show)
+    test_mixins.edit_critic_rating(show)
     test_mixins.edit_originally_available(show)
     test_mixins.edit_original_title(show)
     test_mixins.edit_sort_title(show)
@@ -1108,6 +1116,8 @@ def test_video_Season_mixins_rating(show):
 def test_video_Season_mixins_fields(show):
     season = show.season(season=1)
     test_mixins.edit_added_at(season)
+    test_mixins.edit_audience_rating(season)
+    test_mixins.edit_critic_rating(season)
     test_mixins.edit_summary(season)
     test_mixins.edit_title(season)
     test_mixins.edit_user_rating(season)
@@ -1318,7 +1328,9 @@ def test_video_Episode_mixins_rating(episode):
 
 def test_video_Episode_mixins_fields(episode):
     test_mixins.edit_added_at(episode)
+    test_mixins.edit_audience_rating(episode)
     test_mixins.edit_content_rating(episode)
+    test_mixins.edit_critic_rating(episode)
     test_mixins.edit_originally_available(episode)
     test_mixins.edit_sort_title(episode)
     test_mixins.edit_summary(episode)
