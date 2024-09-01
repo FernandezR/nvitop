@@ -102,6 +102,7 @@ def test_video_Movie_attrs(movies):
     assert movie.title == "Sita Sings the Blues"
     assert movie.titleSort == "Sita Sings the Blues"
     assert movie.type == "movie"
+    assert movie.ultraBlurColors is not None
     assert movie.updatedAt > datetime(2017, 1, 1)
     assert movie.useOriginalTitle == -1
     assert movie.userRating is None
@@ -217,13 +218,13 @@ def test_video_Movie_attrs(movies):
     assert utils.is_int(video.width, gte=400)
     # Part
     part = media.parts[0]
-    assert part.accessible
+    assert part.accessible is None
     assert part.audioProfile == "lc"
     assert part.container in utils.CONTAINERS
     assert part.decision is None
     assert part.deepAnalysisVersion is None or utils.is_int(part.deepAnalysisVersion)
     assert utils.is_int(part.duration, gte=160000)
-    assert part.exists
+    assert part.exists is None
     assert len(part.file) >= 10
     assert part.has64bitOffsets is False
     assert part.hasPreviewThumbnails is False
@@ -323,9 +324,11 @@ def test_video_Movie_getStreamURL(movie, account):
 def test_video_Movie_isFullObject_and_reload(plex):
     movie = plex.library.section("Movies").get("Sita Sings the Blues")
     assert movie.isFullObject() is False
-    movie.reload(checkFiles=False)
+    movie.reload(includeChapters=False)
     assert movie.isFullObject() is False
     movie.reload()
+    assert movie.isFullObject() is True
+    movie.reload(includeExtras=True)
     assert movie.isFullObject() is True
     movie_via_search = plex.library.search(movie.title)[0]
     assert movie_via_search.isFullObject() is False
@@ -667,6 +670,14 @@ def test_video_Movie_batchEdits(movie):
         movie.saveEdits()
 
 
+def test_video_Movie_ultraBlurColors(movie):
+    ultraBlurColors = movie.ultraBlurColors
+    assert ultraBlurColors.bottomLeft
+    assert ultraBlurColors.bottomRight
+    assert ultraBlurColors.topLeft
+    assert ultraBlurColors.topRight
+
+
 def test_video_Movie_mixins_edit_advanced_settings(movie):
     test_mixins.edit_advanced_settings(movie)
 
@@ -815,6 +826,7 @@ def test_video_Show_attrs(show):
     assert show.title == "Game of Thrones"
     assert show.titleSort == "Game of Thrones"
     assert show.type == "show"
+    assert show.ultraBlurColors is not None
     assert show.useOriginalTitle == -1
     assert show.userRating is None
     assert utils.is_datetime(show.updatedAt)
@@ -1042,6 +1054,7 @@ def test_video_Season_attrs(show):
     assert season.title == "Season 1"
     assert season.titleSort == "Season 1"
     assert season.type == "season"
+    assert season.ultraBlurColors is not None
     assert utils.is_datetime(season.updatedAt)
     assert utils.is_int(season.viewCount, gte=0)
     assert utils.is_int(season.viewedLeafCount, gte=0)
@@ -1245,6 +1258,7 @@ def test_video_Episode_attrs(episode):
     assert episode.title == "Winter Is Coming"
     assert episode.titleSort == "Winter Is Coming"
     assert episode.type == "episode"
+    assert episode.ultraBlurColors is not None
     assert utils.is_datetime(episode.updatedAt)
     assert episode.userRating is None
     assert utils.is_int(episode.viewCount, gte=0)
@@ -1285,8 +1299,8 @@ def test_video_Episode_attrs(episode):
     assert len(part.key) >= 10
     assert part._server._baseurl == utils.SERVER_BASEURL
     assert utils.is_int(part.size, gte=18184197)
-    assert part.exists
-    assert part.accessible
+    assert part.exists is None
+    assert part.accessible is None
 
 
 def test_video_Episode_watched(tvshows):
@@ -1434,13 +1448,13 @@ def test_that_reload_return_the_same_object(plex):
 def test_video_exists_accessible(movie, episode):
     assert movie.media[0].parts[0].exists is None
     assert movie.media[0].parts[0].accessible is None
-    movie.reload()
+    movie.reload(checkFiles=True)
     assert movie.media[0].parts[0].exists is True
     assert movie.media[0].parts[0].accessible is True
 
     assert episode.media[0].parts[0].exists is None
     assert episode.media[0].parts[0].accessible is None
-    episode.reload()
+    episode.reload(checkFiles=True)
     assert episode.media[0].parts[0].exists is True
     assert episode.media[0].parts[0].accessible is True
 
